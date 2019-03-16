@@ -63,7 +63,7 @@ result_method_2 = stats.linregress(v_sq_sequence, F_sequence)
 #result_method_3 = stmods.OLS( HERE CODE NOW )
 
 # метод - 4 - аппроксимация полиномом, точно не знаю, какая - scipy
-k = scipy.polyfit(v_sequence, F_sequence, 2)[0]
+k = scipy.polyfit(v_sequence, F_sequence, 10)
 result_method_4_1_2 = scipy.polyfit(v_sequence, F_sequence, 1)
 result_method_4_2 = scipy.polyfit(v_sq_sequence, F_sequence, 1)
 
@@ -73,7 +73,8 @@ result_method_4_2 = scipy.polyfit(v_sq_sequence, F_sequence, 1)
 # метод - 7 - интерполяция - scipy 
 result_method_7_1 = scipy.interpolate.interp1d(v_sequence, F_sequence, "linear")
 result_method_7_2 = scipy.interpolate.interp1d(v_sequence, F_sequence, "quadratic")
-result_method_7_3 = scipy.interpolate.interp1d(v_sq_sequence, F_sequence, "linear")
+result_method_7_3 = scipy.interpolate.interp1d(v_sequence, F_sequence, "cubic")
+result_method_7_4 = scipy.interpolate.interp1d(v_sequence, F_sequence, "nearest")
 
 '''result_method_8 = scipy.interpolate.BarycentricInterpolator(xi[, yi, axis])
 
@@ -81,10 +82,10 @@ result_method_9 = scipy.interpolate.barycentric_interpolate(xi, yi, x[, axis])
 
 result_method_10 = scipy.interpolate.BPoly(c, x[, extrapolate, axis])'''
 
-# print("result_method_1 = ", result_method_1)
+print("result_method_1 = ", result_method_1)
 print("result_method_2 = ", result_method_2)
-#print("result_method_3 = ", result_method_3)
-print("result_method_4_1 = ", result_method_4_1)
+print("k = ", k)
+#print("result_method_4_1 = ", result_method_4_1)
 print("result_method_4_1_2 = ", result_method_4_1_2)
 print("result_method_4_2 = ", result_method_4_2)
 #print("result_method_5 = ", result_method_5)
@@ -92,6 +93,17 @@ print("result_method_7_1 = ", result_method_7_1)
 print("result_method_7_2 = ", result_method_7_2)
 print("result_method_7_3 = ", result_method_7_3)
 
+for i in range(10):
+	print(result_method_7_1(i*10))
+print()
+for i in range(10):
+	print(result_method_7_2(i*10))
+print()
+for i in range(10):
+	print(result_method_7_3(i*10))
+print()
+for i in range(10):
+	print(result_method_7_4(i*10))
 # ПОИСК ОПТИМАЛЬНОГО ПРОМЕЖУТКА РАЗБИЕНИЯ ВРЕМЕНИ - WIP - ХЗХЗХХЗХ
 
 # СОСТАВЛЕНИЕ ТАБЛИЦ
