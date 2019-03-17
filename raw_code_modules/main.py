@@ -76,8 +76,8 @@ h_t_array = args_t_arrays[:, 5]
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА
 
 _, axe = plt.subplots()
-axe.plot(x_t_array, t, color = "red")
-axe.plot(z_t_array, t, color = "green")
-axe.plot(h_t_array, t, color = "blue")
+axe.plot(t, x_t_array, color = "red")
+axe.plot(t, z_t_array, color = "green")
+axe.plot(t, h_t_array, color = "blue")
 
 plt.show()
