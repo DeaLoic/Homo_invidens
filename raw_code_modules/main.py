@@ -2,6 +2,7 @@ from scipy.interpolate import interp1d
 from scipy.integrate import odeint
 import csv
 from pylab import *
+import matplotlib.pyplot as plt
 
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
@@ -46,77 +47,37 @@ F_aer_v = interp1d(v_sequence, F_sequence, "nearest", fill_value = "extrapolate"
 
 # РЕШЕНИЕ ДИФФ УРАВНЕНИЙ
 
-def func_v_x(v, t):
+t = linspace(0, H, H)
+
+def func(args, t):
+
 	global m
-	func = -F_aer_v(v)  / m  + v_wind_h_x(v)
-	return func
 
-def func_v_z(v, t):
-	global m
-	func = -F_aer_v(v)  / m  + v_wind_h_z(v)
-	return func
+	v_x, v_z, v_h, x, z, h = args
 
-def func_v_h(v, t):
-	global m
-	func = -F_aer_v(v)  / m - 9.81
-	return func
+	f_v_x = -F_aer_v(v_x)  / m  + v_wind_h_x(h) 
+	f_v_z = -F_aer_v(v_z)  / m  + v_wind_h_z(h)
+	f_v_h = -F_aer_v(v_h)  / m + 9.81
+	f_x = v_x
+	f_z = v_z
+	f_h = v_h
 
-def func_c_x(c, t):
-	return f_v_x(t)
+	return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
 
-def func_c_z(c, t):
-	return f_v_z(t)
+args_t_arrays = odeint(func, [v_0, 0, 0, 0, 0, H], t)
 
-def func_c_h(c, t):
-	return f_v_h(t)
+vx_t_array = args_t_arrays[:, 0]
+vz_t_array = args_t_arrays[:, 1]
+vh_t_array = args_t_arrays[:, 2]
+x_t_array = args_t_arrays[:, 3]
+z_t_array = args_t_arrays[:, 4]
+h_t_array = args_t_arrays[:, 5]
 
+# ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА
 
-t = linspace(0, 10000, 10000)
+_, axe = plt.subplots()
+axe.plot(x_t_array, t, color = "red")
+axe.plot(z_t_array, t, color = "green")
+axe.plot(h_t_array, t, color = "blue")
 
-v_array_x_raw = odeint(func_v_x, v_0 , t)
-v_array_z_raw = odeint(func_v_z, 0 , t)
-v_array_h_raw = odeint(func_v_h, 0 , t)
-
-v_array_x = []
-for i in v_array_x_raw:
-	v_array_x.append(i[0])
-
-v_array_z = []
-for i in v_array_z_raw:
-	v_array_z.append(i[0])
-
-v_array_h = []
-for i in v_array_h_raw:
-	v_array_h.append(i[0])
-
-f_v_x = interp1d(t, v_array_x, "nearest", fill_value = "extrapolate")
-f_v_z = interp1d(t, v_array_z, "nearest", fill_value = "extrapolate")
-f_v_h = interp1d(t, v_array_h, "nearest", fill_value = "extrapolate")
-
-
-c_array_x_raw = odeint(func_c_x, 0, t)
-c_array_z_raw = odeint(func_c_z, 0, t)
-c_array_h_raw = odeint(func_c_h, H, t)
-
-c_array_x = []
-for i in c_array_x_raw:
-	c_array_x.append(i[0])
-
-c_array_z = []
-for i in c_array_z_raw:
-	c_array_z.append(i[0])
-
-c_array_h = []
-for i in c_array_h_raw:
-	c_array_h.append(i[0])
-
-
-# ПОЛУЧЕННЫЕ ФУЕКЦИИ КООРДИНАТ ОТ ВРЕМЕНИ
-
-f_x = interp1d(t, c_array_x, "nearest", fill_value = "extrapolate")
-f_z = interp1d(t, c_array_z, "nearest", fill_value = "extrapolate")
-f_h = interp1d(t, c_array_h, "nearest", fill_value = "extrapolate")
-
-# ВИЗУАЛИЗАЦИЯ ГРАФИКОВ КООРДИНАТ
-
-
+plt.show()
