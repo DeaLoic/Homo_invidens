@@ -1,16 +1,17 @@
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint
-import csv
-from pylab import *
-import matplotlib.pyplot as plt
-
+from matplotlib.pyplot import subplots, plot, show
+from pynverse import inversefunc
+from pylab import linspace
+from csv import reader
+from math import ceil
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
 
 v_0, H, m = map(int, input("Введите v_0, H, m - через пробелы: ").split())
 
-reader_wind = csv.reader(open("Wind.csv", "r"))
-reader_F = csv.reader(open("F.csv", "r"))
+reader_wind = reader(open("Wind.csv", "r"))
+reader_F = reader(open("F.csv", "r"))
 
 F_sequence = [] 
 v_sequence = []
@@ -47,7 +48,7 @@ F_aer_v = interp1d(v_sequence, F_sequence, "nearest", fill_value = "extrapolate"
 
 # РЕШЕНИЕ ДИФФ УРАВНЕНИЙ
 
-t = linspace(0, H, H)
+t = linspace(0, 10*H, 100*H)
 
 def func(args, t):
 
@@ -55,9 +56,9 @@ def func(args, t):
 
 	v_x, v_z, v_h, x, z, h = args
 
-	f_v_x = -F_aer_v(v_x)  / m  + v_wind_h_x(h) 
-	f_v_z = -F_aer_v(v_z)  / m  + v_wind_h_z(h)
-	f_v_h = -F_aer_v(v_h)  / m + 9.81
+	f_v_x = F_aer_v(v_x)  / m  + v_wind_h_x(h) 
+	f_v_z = F_aer_v(v_z)  / m  + v_wind_h_z(h)
+	f_v_h = F_aer_v(v_h)  / m - 9.81
 	f_x = v_x
 	f_z = v_z
 	f_h = v_h
@@ -66,18 +67,27 @@ def func(args, t):
 
 args_t_arrays = odeint(func, [v_0, 0, 0, 0, 0, H], t)
 
-vx_t_array = args_t_arrays[:, 0]
-vz_t_array = args_t_arrays[:, 1]
-vh_t_array = args_t_arrays[:, 2]
-x_t_array = args_t_arrays[:, 3]
-z_t_array = args_t_arrays[:, 4]
-h_t_array = args_t_arrays[:, 5]
+# получаем выходные функции
+x_t = interp1d(t, args_t_arrays[:, 3], "nearest", fill_value = "extrapolate")
+z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
+h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
+
+# находим время призмеления для изъятия конечных координат
+t_landind = inversefunc(h_t, y_values = 0)
+
+x_result_raw = x_t(t_landind)
+x_result_raw = z_t(t_landind)
 
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА
 
-_, axe = plt.subplots()
-axe.plot(t, x_t_array, color = "red")
-axe.plot(t, z_t_array, color = "green")
-axe.plot(t, h_t_array, color = "blue")
+t_vision = linspace(0, ceil(t_landind), 10000)
+x_t_vision = x_t(t_vision)
+z_t_vision = z_t(t_vision)
+h_t_vision = h_t(t_vision)
 
-plt.show()
+_, axe = subplots()
+axe.plot(t_vision, x_t_vision, color = "red")
+axe.plot(t_vision, z_t_vision, color = "green")
+axe.plot(t_vision, h_t_vision, color = "blue")
+
+show()
