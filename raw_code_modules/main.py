@@ -1,14 +1,18 @@
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint
-from matplotlib.pyplot import subplots, plot, show
+from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabel, legend, axes
+from matplotlib.pylab import linspace
 from pynverse import inversefunc
-from pylab import linspace
 from csv import reader
 from math import ceil
+from numpy import array
+from mpl_toolkits.mplot3d import Axes3D
+
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
 
-v_0, H, m = map(int, input("Введите v_0, H, m - через пробелы: ").split())
+v_0, H, m = map(int, input("Введите целочисленные v_0, H, m - через пробелы: ").split())
+x_target, z_target = map(int, input("Введите x, z целочисленные координаты приземления - через пробелы: ").split())
 
 reader_wind = reader(open("Wind.csv", "r"))
 reader_F = reader(open("F.csv", "r"))
@@ -79,20 +83,41 @@ h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 t_landind = inversefunc(h_t, y_values = 0)
 
 # находим координаты приземления по x и z
-x_result_raw = x_t(t_landind)
-x_result_raw = z_t(t_landind)
+x_result = x_target + x_t(t_landind)
+z_result = z_target + z_t(t_landind)
 
-# ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА
+
+# ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
 t_vision = linspace(0, ceil(t_landind), 10000)
-x_t_vision = x_t(t_vision)
-z_t_vision = z_t(t_vision)
-h_t_vision = h_t(t_vision)
+x_t_vision = array(x_t(t_vision))
+z_t_vision = array(z_t(t_vision))
+h_t_vision = array(h_t(t_vision))
 
-_, axe = subplots()
+x_t_vision += x_target  # Поднимаем графики, в соотвествии с конечными координатами
+z_t_vision += z_target  # - / / -
+
+# ОТСЮДА - ИСКЛЮЧИТЕЛЬНО РАБОТА С ОКНАМИ
+
+# 2d - графики - координат от времени
+figure_2d_coordinates, axe = subplots(num  = 'Координаты от времени')
+title("Графики зависимостей координат от времени")
+xlabel("Время, в секундах")
+ylabel("Координаты, в метрах")
 axe.plot(t_vision, x_t_vision, color = "red")
-axe.plot(t_vision, z_t_vision, color = "green")
 axe.plot(t_vision, h_t_vision, color = "blue")
+axe.plot(t_vision, z_t_vision, color = "green")
+legend(("x(t)", "y(t)", "z(t)"))
+
+# 3d - график - траектория от времени
+figure_3d_trajectory = figure(num = 'Траектория движения')
+title("Траектория полета тела")
+ax = axes(projection='3d')
+plot(xs = x_t_vision, zs = z_t_vision, ys = h_t_vision, zdir = 'y')
+ax.set_xlabel('x coordinate, meters')
+ax.set_ylabel('z coordinate, meters')
+ax.set_zlabel('height, [y coordinate], meters');
+
 
 show()
