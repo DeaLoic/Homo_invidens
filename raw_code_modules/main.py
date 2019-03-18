@@ -48,8 +48,10 @@ F_aer_v = interp1d(v_sequence, F_sequence, "nearest", fill_value = "extrapolate"
 
 # РЕШЕНИЕ ДИФФ УРАВНЕНИЙ
 
+# Создаем линейное пространство - numpy массив линейно возрастающих чисел - ось аргумента
 t = linspace(0, 10*H, 100*H)
 
+# Записываем систему дифференциальных уравнений в матричном виде, где func(y, x) = dy / dx
 def func(args, t):
 
 	global m
@@ -65,16 +67,18 @@ def func(args, t):
 
 	return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
 
+# вызываем функция решения системы дифференциальных уравнений из scipy
 args_t_arrays = odeint(func, [v_0, 0, 0, 0, 0, H], t)
 
-# получаем выходные функции
+# получаем выходные функции - интерполируем массивы результатов
 x_t = interp1d(t, args_t_arrays[:, 3], "nearest", fill_value = "extrapolate")
 z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
 h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 
-# находим время призмеления для изъятия конечных координат
+# находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
 t_landind = inversefunc(h_t, y_values = 0)
 
+# находим координаты приземления по x и z
 x_result_raw = x_t(t_landind)
 x_result_raw = z_t(t_landind)
 
