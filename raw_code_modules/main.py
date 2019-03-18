@@ -84,6 +84,7 @@ x_result_raw = z_t(t_landind)
 
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА
 
+# для красивой визуализации - ограничиваем ось врмемени временем приземления
 t_vision = linspace(0, ceil(t_landind), 10000)
 x_t_vision = x_t(t_vision)
 z_t_vision = z_t(t_vision)
