@@ -1,9 +1,12 @@
 from math import sqrt
+import pandas as pd
+
 
 # Интерполирует таблицу зависимости аэродинамической силы от скорости
 # в единую функцию вида F = k * V^2 и возвращает k
 def aerodynamic_force_coef():
     pass
+
 
 # Предварительно карта ветров должна быть интерполирована в кусочную
 # функцию из линейных функци вида V_<coord> = k * y + b для всех промежутков
@@ -17,14 +20,22 @@ def speed_wind_z(y):
     pass
 
 
-m = float(input())
+v_to_f_data = pd.read_csv('F.csv')
+v_to_f_data["k"] = pd.Series(v_to_f_data["F(N)"] / v_to_f_data["V(m/s)"] ** 2, index=v_to_f_data.index)
+
+wind_data = pd.read_csv('Wind.csv')
+
+m = float(input("Input m: "))
 g = 9.81
 
 x = 0
-y = float(input())
+y = float(input("Input height: "))
 z = 0
 
-speed_x = float(input())
+x_aim = float(input("Input x aim: "))
+z_aim = float(input("Input y aim: "))
+
+speed_x = float(input("Input start speed: "))
 speed_y = 0
 speed_z = 0
 
@@ -33,8 +44,11 @@ delta_t = 0.01
 
 force_coef = aerodynamic_force_coef()
 
-trajectory = [0 for i in range(100000)]
-trajectory[0] = [t, x, y, z, speed_x, speed_y, speed_z]
+trajectory = pd.DataFrame(columns=["t", "x", "y", "z", "Wx", "Wy", "Wz"])
+trajectory.loc[0] = [t, x, y, z, speed_x, speed_y, speed_z]
+# [t, x, y, z, speed_x, speed_y, speed_z]
+
+print(trajectory)
 N = 1
 
 while y > 0:
@@ -64,8 +78,6 @@ while y > 0:
 trajectory[N - 1][2] = 0
 
 # Узнаём требуемую точку попадания и соответственно сдвигаем всю траекторию по горизинтали
-x_aim = float(input())
-z_aim = float(input())
 delta_x = x_aim - trajectory[N - 1][1]
 delta_z = z_aim - trajectory[N - 1][3]
 
@@ -73,4 +85,3 @@ for i in range(N):
     trajectory[i][1] += delta_x
     trajectory[i][3] += delta_z
 
-    
