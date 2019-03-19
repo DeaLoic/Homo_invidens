@@ -8,7 +8,6 @@ from csv import reader
 from math import ceil, floor, sqrt
 from numpy import array
 from mpl_toolkits.mplot3d import Axes3D
-import scipy
 
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
@@ -40,7 +39,7 @@ for line in reader_wind:
 	else:
 		h_sequence.append(float(line[0]))
 		v_wind_sequence_x.append(float(line[1]))
-		v_wind_sequence_z.append(float(line[1]))
+		v_wind_sequence_z.append(float(line[2]))
 
 
 
@@ -60,7 +59,6 @@ t = linspace(0, 10*H, 100*H)
 # Записываем систему дифференциальных уравнений в матричном виде, где func(y, x) = dy / dx
 def func(args, t):
 
-        
     global m
 
     v_x, v_z, v_h, x, z, h = args
@@ -75,7 +73,6 @@ def func(args, t):
     f_x = v_x
     f_z = v_z
     f_h = v_h
-
 
     return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
 
