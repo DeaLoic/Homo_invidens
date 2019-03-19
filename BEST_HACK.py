@@ -42,9 +42,9 @@ while y > 0:
 
     f_cur_v = f_aer_v(speed_air_full)
 
-    speed_x_next = speed_x - (f_cur_v * speed_air_x / speed_air_full) * speed_air_full * delta_t / m
-    speed_y_next = speed_y - (g + (f_cur_v * speed_air_y / speed_air_full) * speed_air_full / m) * delta_t
-    speed_z_next = speed_z - (f_cur_v * speed_air_z / speed_air_full) * speed_air_full * delta_t / m
+    speed_x_next = speed_x - (f_cur_v * speed_air_x / speed_air_full) * delta_t / m
+    speed_y_next = speed_y - g * delta_t + (f_cur_v * speed_air_y / speed_air_full) * delta_t / m
+    speed_z_next = speed_z - (f_cur_v * speed_air_z / speed_air_full) * delta_t / m
 
     x += (speed_x_next + speed_x) / 2 * delta_t
     y += (speed_y_next + speed_y) / 2 * delta_t
