@@ -5,7 +5,7 @@ from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabe
 from matplotlib.pylab import linspace
 from pynverse import inversefunc
 from csv import reader
-from math import ceil, floor
+from math import ceil, floor, sqrt
 from numpy import array
 from mpl_toolkits.mplot3d import Axes3D
 import scipy
@@ -60,18 +60,24 @@ t = linspace(0, 10*H, 100*H)
 # Записываем систему дифференциальных уравнений в матричном виде, где func(y, x) = dy / dx
 def func(args, t):
 
-	global m
+        
+    global m
 
-	v_x, v_z, v_h, x, z, h = args
+    v_x, v_z, v_h, x, z, h = args
+ 
+    v_air_z = v_z - v_wind_h_z(h)
+    v_air_x = v_x - v_wind_h_x(h)
+    v_air_full = sqrt(v_air_x ** 2 + v_air_z ** 2 + v_h ** 2)
 
-	f_v_x = - F_aer_v(v_x)  / m  + v_wind_h_x(h) 
-	f_v_z = - F_aer_v(v_z)  / m  + v_wind_h_z(h)
-	f_v_h = F_aer_v(v_h)  / m - 9.81
-	f_x = v_x
-	f_z = v_z
-	f_h = v_h
+    f_v_x = - (v_air_x * F_aer_v(v_air_full) / v_air_full) / m 
+    f_v_z = - (v_air_z * F_aer_v(v_air_full) / v_air_full) / m 
+    f_v_h =   (v_h * F_aer_v(v_air_full) / v_air_full) / m - 9.81
+    f_x = v_x
+    f_z = v_z
+    f_h = v_h
 
-	return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
+
+    return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
 
 # вызываем функция решения системы дифференциальных уравнений из scipy
 args_t_arrays = odeint(func, [v_0, 0, 0, 0, 0, H], t)
@@ -82,12 +88,12 @@ z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
 h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 
 # находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
-t_landing = fsolve(h_t, 0.1)[0]*0.92745
+t_landing = fsolve(h_t, 0.1)[0]
 
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, floor(t_landing), 10000)
+t_vision = linspace(0, floor(t_landing), 1000000)
 x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
