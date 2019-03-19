@@ -90,7 +90,7 @@ t_landing = fsolve(h_t, 0.1)[0]
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, floor(t_landing), 1000000)
+t_vision = linspace(0, t_landing, 10000)
 x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
