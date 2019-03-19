@@ -1,0 +1,1 @@
+scipy, matplotlib, pynverse, pylab, csv, math, numpy
