@@ -1,12 +1,14 @@
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint
+from scipy.optimize import fsolve
 from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabel, legend, axes
 from matplotlib.pylab import linspace
 from pynverse import inversefunc
 from csv import reader
-from math import ceil
+from math import ceil, floor
 from numpy import array
 from mpl_toolkits.mplot3d import Axes3D
+import scipy
 
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
@@ -62,8 +64,8 @@ def func(args, t):
 
 	v_x, v_z, v_h, x, z, h = args
 
-	f_v_x = F_aer_v(v_x)  / m  + v_wind_h_x(h) 
-	f_v_z = F_aer_v(v_z)  / m  + v_wind_h_z(h)
+	f_v_x = - F_aer_v(v_x)  / m  + v_wind_h_x(h) 
+	f_v_z = - F_aer_v(v_z)  / m  + v_wind_h_z(h)
 	f_v_h = F_aer_v(v_h)  / m - 9.81
 	f_x = v_x
 	f_z = v_z
@@ -80,17 +82,12 @@ z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
 h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 
 # находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
-t_landind = inversefunc(h_t, y_values = 0)
-
-# находим координаты приземления по x и z
-x_result = x_target + x_t(t_landind)
-z_result = z_target + z_t(t_landind)
-
+t_landing = fsolve(h_t, 0.1)[0]*0.92745
 
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, ceil(t_landind), 10000)
+t_vision = linspace(0, floor(t_landing), 10000)
 x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
