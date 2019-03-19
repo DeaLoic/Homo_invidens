@@ -2,6 +2,10 @@ from math import sqrt
 import pandas as pd
 from scipy.interpolate import interp1d
 
+import numpy as np
+import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as p3
+import matplotlib.animation as animation
 
 m = float(input("input m: "))
 g = 9.81
@@ -10,7 +14,8 @@ x = 0
 y = float(input("input h: "))
 z = 0
 
-speed_x = float(input("input v0: "))
+v0 = float(input("input v0: "))
+speed_x = v0
 speed_y = 0
 speed_z = 0
 
@@ -42,9 +47,9 @@ while y > 0:
 
     f_cur_v = f_aer_v(speed_air_full)
 
-    speed_x_next = speed_x - (f_cur_v * speed_air_x / speed_air_full) * delta_t / m
+    speed_x_next = speed_x + (f_cur_v * speed_air_x / speed_air_full) * delta_t / m
     speed_y_next = speed_y - g * delta_t + (f_cur_v * speed_air_y / speed_air_full) * delta_t / m
-    speed_z_next = speed_z - (f_cur_v * speed_air_z / speed_air_full) * delta_t / m
+    speed_z_next = speed_z + (f_cur_v * speed_air_z / speed_air_full) * delta_t / m
 
     x += (speed_x_next + speed_x) / 2 * delta_t
     y += (speed_y_next + speed_y) / 2 * delta_t
@@ -67,7 +72,29 @@ trajectory.loc[N-1][2] = 0
 trajectory["x"] += delta_x
 trajectory["z"] += delta_z
 
+print(trajectory)
+
 trajectory.to_csv('Trajectory.csv')
 
 print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
 
+fig = plt.figure()
+ax = p3.Axes3D(fig)
+
+line = ax.plot((trajectory['x'] - trajectory.loc[0]["x"]).values,
+               (trajectory['z']).values,
+               (trajectory['y'].values))[0]
+
+step_cell = max(trajectory.loc[0]["y"], trajectory.loc[0]["x"], trajectory.loc[0]["z"])
+ax.set_xlim3d([0, step_cell])
+ax.set_xlabel('X')
+
+ax.set_ylim3d([0, step_cell])
+ax.set_ylabel('Z')
+
+ax.set_zlim3d([0, step_cell])
+ax.set_zlabel('Y')
+
+ax.set_title('v0 = {}, delta_t = {}, m = {}'.format(v0, delta_t, m))
+
+plt.show()
