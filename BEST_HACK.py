@@ -1,6 +1,6 @@
 from math import sqrt
 import pandas as pd
-
+from scipy.interpolate import interp1d
 
 # Интерполирует таблицу зависимости аэродинамической силы от скорости
 # в единую функцию вида F = k * V^2 и возвращает k
@@ -20,47 +20,49 @@ def speed_wind_z(y):
     pass
 
 
-v_to_f_data = pd.read_csv('F.csv')
-v_to_f_data["k"] = pd.Series(v_to_f_data["F(N)"] / v_to_f_data["V(m/s)"] ** 2, index=v_to_f_data.index)
-
-wind_data = pd.read_csv('Wind.csv')
-
-m = float(input("Input m: "))
+m = float(input("input m: "))
 g = 9.81
 
 x = 0
-y = float(input("Input height: "))
+y = float(input("input h: "))
 z = 0
 
-x_aim = float(input("Input x aim: "))
-z_aim = float(input("Input y aim: "))
-
-speed_x = float(input("Input start speed: "))
+speed_x = float(input("input v0: "))
 speed_y = 0
 speed_z = 0
 
+x_aim = float(input("x target: "))
+z_aim = float(input("z target: "))
+
 t = 0
-delta_t = 0.01
+delta_t = float(input("delta t: "))
 
-force_coef = aerodynamic_force_coef()
+wind_csv = pd.read_csv("Wind.csv")
+f_csv = pd.read_csv("F.csv")
 
-trajectory = pd.DataFrame(columns=["t", "x", "y", "z", "Wx", "Wy", "Wz"])
+
+v_wind_h_x = interp1d(wind_csv["Height (m)"], wind_csv["Wx (m/s)"], "nearest", fill_value="extrapolate")
+v_wind_h_z = interp1d(wind_csv["Height (m)"], wind_csv["Wz (m/s)"], "nearest", fill_value="extrapolate")
+f_aer_v = interp1d(f_csv["V(m/s)"], f_csv["F(N)"], "nearest", fill_value="extrapolate")
+
+
+trajectory = pd.DataFrame(columns=["t", "x", "y", "z", "speed_x", "speed_y", "speed_z"])
 trajectory.loc[0] = [t, x, y, z, speed_x, speed_y, speed_z]
-# [t, x, y, z, speed_x, speed_y, speed_z]
-
 print(trajectory)
 N = 1
 
 while y > 0:
-    speed_air_x = speed_wind_x(y) - speed_x
+    speed_air_x = - v_wind_h_x(y) + speed_x
     speed_air_y = - speed_y
-    speed_air_z = speed_wind_z(y) - speed_z
+    speed_air_z = - v_wind_h_z(y) + speed_z
 
     speed_air_full = sqrt(speed_air_x * speed_air_x + speed_air_y * speed_air_y + speed_air_z * speed_air_z)
-    
-    speed_x_next = speed_x - force_coef * speed_air_full * speed_air_x * delta_t / m
-    speed_y_next = speed_y - g * delta_t + force_coef * speed_air_full * speed_air_y * delta_t / m
-    speed_z_next = speed_z - force_coef * speed_air_full * speed_air_z * delta_t / m
+
+    f_cur_v = f_aer_v(speed_air_full)
+
+    speed_x_next = speed_x - f_cur_v * speed_air_x / speed_air_full * delta_t / m
+    speed_y_next = speed_y - g * delta_t + f_cur_v * speed_air_y / speed_air_full * delta_t / m
+    speed_z_next = speed_z - f_cur_v * speed_air_z / speed_air_full * delta_t / m
 
     x += (speed_x_next + speed_x) / 2 * delta_t
     y += (speed_y_next + speed_y) / 2 * delta_t
@@ -71,17 +73,19 @@ while y > 0:
     speed_z = speed_z_next
 
     t += delta_t
-    
-    trajectory[N] = [t, x, y, z, speed_x, speed_y, speed_z]
+
+    trajectory.loc[N] = [t, x, y, z, speed_x, speed_y, speed_z]
     N += 1
 
-trajectory[N - 1][2] = 0
+delta_x = x_aim - trajectory.loc[N - 1][1]
+delta_z = z_aim - trajectory.loc[N - 1][3]
 
-# Узнаём требуемую точку попадания и соответственно сдвигаем всю траекторию по горизинтали
-delta_x = x_aim - trajectory[N - 1][1]
-delta_z = z_aim - trajectory[N - 1][3]
 
-for i in range(N):
-    trajectory[i][1] += delta_x
-    trajectory[i][3] += delta_z
+trajectory.loc[N-1][2] = 0
+trajectory["x"] += delta_x
+trajectory["z"] += delta_z
+
+print(trajectory)
+
+print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
 
