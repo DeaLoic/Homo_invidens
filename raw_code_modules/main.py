@@ -64,9 +64,9 @@ def func(args, t):
 
 	v_x, v_z, v_h, x, z, h = args
 
-	f_v_x = - F_aer_v(v_x)  / m  + v_wind_h_x(h) 
-	f_v_z = - F_aer_v(v_z)  / m  + v_wind_h_z(h)
-	f_v_h = F_aer_v(v_h)  / m - 9.81
+	f_v_x = - (F_aer_v(pow(v_z**2 + v_x**2 + v_h**2, 0.5)) * v_x / pow(v_z**2 + v_x**2 + v_h**2, 0.5) ) / m  - v_wind_h_x(h) 
+	f_v_z = - (F_aer_v(pow(v_z**2 + v_x**2 + v_h**2, 0.5)) * v_z / pow(v_z**2 + v_x**2 + v_h**2, 0.5) ) / m  - v_wind_h_z(h)
+	f_v_h = F_aer_v(pow(v_z**2 + v_x**2 + v_h**2, 0.5)) * v_h / pow(v_z**2 + v_x**2 + v_h**2, 0.5)  / m - 9.81
 	f_x = v_x
 	f_z = v_z
 	f_h = v_h
@@ -82,12 +82,12 @@ z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
 h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 
 # находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
-t_landing = fsolve(h_t, 0.1)[0]*0.92745
+t_landing = fsolve(h_t, 0.1)[0]
 
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, floor(t_landing), 10000)
+t_vision = linspace(0, floor(t_landing), 1000000)
 x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
