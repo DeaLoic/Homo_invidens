@@ -87,6 +87,12 @@ h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 # находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
 t_landing = fsolve(h_t, 0.1)[0]
 
+x_landing = x_t(t_landing)
+z_landing = z_t(t_landing)
+
+delta_x = x_target - x_landing
+delta_z = z_target - z_landing
+
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
@@ -95,8 +101,8 @@ x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
 
-x_t_vision += x_target  # Поднимаем графики, в соотвествии с конечными координатами
-z_t_vision += z_target  # - / / -
+x_t_vision += delta_x
+z_t_vision += delta_z
 
 # ОТСЮДА - ИСКЛЮЧИТЕЛЬНО РАБОТА С ОКНАМИ
 
