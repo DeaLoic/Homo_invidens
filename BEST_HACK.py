@@ -1,44 +1,24 @@
 from math import sqrt
+from input_data import m, g, H, V_start, x_aim, z_aim, F_from_V, Wind_x, Wind_z, delta_t
 
-# Интерполирует таблицу зависимости аэродинамической силы от скорости
-# в единую функцию вида F = k * V^2 и возвращает k
-def aerodynamic_force_coef():
-    pass
-
-# Предварительно карта ветров должна быть интерполирована в кусочную
-# функцию из линейных функци вида V_<coord> = k * y + b для всех промежутков
-# у1..y2. Функции speed_wind_<coord> возвращают скорость ветра на данной высоте
-# по соответствующей координате
-def speed_wind_x(y):
-    pass
-
-
-def speed_wind_z(y):
-    pass
-
-
-m = float(input())
-g = 9.81
 
 x = 0
-y = float(input())
+y = H
 z = 0
 
-speed_x = float(input())
+speed_x = V_start
 speed_y = 0
 speed_z = 0
 
 t = 0
-delta_t = 0.01
 
-force_coef = aerodynamic_force_coef()
-
-trajectory = [0 for i in range(100000)]
-trajectory[0] = [t, x, y, z, speed_x, speed_y, speed_z]
-N = 1
+trajectory = pd.DataFrame({'Time': [], 'X': [], 'Y': [], 'Z': [],
+                           'Speed_x': [], 'Speed_y': [], 'Speed_z': []})
+trajectory.loc[0] = t, x, y, z, speed_x, speed_y, speed_z
+i = 1
 
 while y > 0:
-    speed_air_x = speed_wind_x(y) - speed_x
+    speed_air_x = Wind_x(y) - speed_x
     speed_air_y = - speed_y
     speed_air_z = speed_wind_z(y) - speed_z
 
