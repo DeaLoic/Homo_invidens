@@ -2,23 +2,10 @@ from math import sqrt
 import pandas as pd
 from scipy.interpolate import interp1d
 
-# Интерполирует таблицу зависимости аэродинамической силы от скорости
-# в единую функцию вида F = k * V^2 и возвращает k
-def aerodynamic_force_coef():
-    pass
-
-
-# Предварительно карта ветров должна быть интерполирована в кусочную
-# функцию из линейных функци вида V_<coord> = k * y + b для всех промежутков
-# у1..y2. Функции speed_wind_<coord> возвращают скорость ветра на данной высоте
-# по соответствующей координате
-def speed_wind_x(y):
-    pass
-
-
-def speed_wind_z(y):
-    pass
-
+import numpy as np
+import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as p3
+import matplotlib.animation as animation
 
 m = float(input("input m: "))
 g = 9.81
@@ -27,7 +14,8 @@ x = 0
 y = float(input("input h: "))
 z = 0
 
-speed_x = float(input("input v0: "))
+v0 = float(input("input v0: "))
+speed_x = v0
 speed_y = 0
 speed_z = 0
 
@@ -89,3 +77,23 @@ print(trajectory)
 
 print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
 
+fig = plt.figure()
+ax = p3.Axes3D(fig)
+
+line = ax.plot((trajectory['x'] - trajectory.loc[0]["x"]).values,
+               (trajectory['z']).values,
+               (trajectory['y'].values))[0]
+
+step_cell = max(trajectory.loc[0]["y"], trajectory.loc[0]["x"], trajectory.loc[0]["z"])
+ax.set_xlim3d([0, step_cell])
+ax.set_xlabel('X')
+
+ax.set_ylim3d([0, step_cell])
+ax.set_ylabel('Z')
+
+ax.set_zlim3d([0, step_cell])
+ax.set_zlabel('Y')
+
+ax.set_title('v0 = {}, delta_t = {}, m = {}'.format(v0, delta_t, m))
+
+plt.show()
