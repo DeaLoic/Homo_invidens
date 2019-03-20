@@ -2,7 +2,7 @@ from math import sqrt, ceil
 import pandas as pd
 from scipy.interpolate import interp1d
 
-from scipy.integrate import odeint
+from scipy.integrate import odeint, ode
 from scipy.optimize import fsolve
 from matplotlib.pylab import linspace
 import timeit
@@ -136,14 +136,6 @@ v_wind_h_z = interp1d(wind_csv["Height (m)"], wind_csv["Wz (m/s)"], "nearest", f
 f_aer_v = interp1d(f_csv["V(m/s)"], f_csv["F(N)"], "nearest", fill_value="extrapolate")
 
 
-'''
-test(y, v0, m, 1, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v)
-test(y, v0, m, 0.1, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v)
-test(y, v0, m, 0.01, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v)
-test(y, v0, m, 0.001, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v)
-test(y, v0, m, 0.0001, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v,)
-'''
-
 m = float(input("input m: "))
 while m != 0:
     y = float(input("input h: "))
@@ -152,6 +144,9 @@ while m != 0:
     samples = int(input("input samples: "))
 
     # test(y, v0, m, delta_t=delta_t, v_wind_h_x=v_wind_h_x, v_wind_h_z=v_wind_h_z, f_aer_v=f_aer_v)
+    print("----------")
     test2(y, v0, m, v_wind_h_x, v_wind_h_z, f_aer_v, samples=samples)
+    print("----------")
+    # test3(y, v0, m, v_wind_h_x, v_wind_h_z, f_aer_v, samples=samples, delta_t=delta_t)
 
     m = float(input("input m: "))
