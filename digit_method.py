@@ -47,6 +47,7 @@ def digit_method(y, v0, m, delta_t, v_wind_h_x, v_wind_h_z, f_aer_v, x_aim=0.0, 
 
         trajectory.loc[N] = [speed_x, speed_z, speed_y, x, z, y, t]
         N += 1
+        
     delta_x = x_aim - trajectory.loc[N - 1]["x"]
     delta_z = z_aim - trajectory.loc[N - 1]["z"]
 
