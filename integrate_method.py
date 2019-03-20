@@ -1,10 +1,8 @@
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint
-from scipy.optimize import fsolve
 from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabel, legend, axes
 from matplotlib.pylab import linspace
 from math import sqrt
-from numpy import array
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 
