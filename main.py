@@ -26,15 +26,17 @@ f_aer_v = interp1d(f_csv["V(m/s)"], f_csv["F(N)"], "nearest", fill_value="extrap
 trajectory = integral_method(H, v_0, m, v_wind_h_x, v_wind_h_z, f_aer_v,
                              x_target=x_aim, z_target=z_aim)
 
+# Проверка на корректность
 if len(trajectory.index) == 1\
-        or abs(trajectory.loc[len(trajectory.index) - 1]["speed_y"]) <= 10e-6:
+        or trajectory.loc[len(trajectory.index) - 1]["speed_y"] == 0:
     trajectory = digit_method(H, v_0, m, 0.01, v_wind_h_z, v_wind_h_z, f_aer_v,
                               x_aim=x_aim, z_aim=z_aim)
 
-print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
+print("Angle: 0\nX0: {}\nY0 {}\nZ0: {}".format(trajectory.loc[0]["x"], H, trajectory.loc[0]["z"]))
 
 trajectory.to_csv("Trajectory.csv", index = False)
 
+# Визуализация траектории
 fig = plt.figure()
 ax = p3.Axes3D(fig)
 

@@ -1,10 +1,8 @@
 from scipy.interpolate import interp1d
 from scipy.integrate import odeint
-from scipy.optimize import fsolve
 from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabel, legend, axes
 from matplotlib.pylab import linspace
 from math import sqrt
-from numpy import array
 import pandas as pd
 from mpl_toolkits.mplot3d import Axes3D
 
@@ -80,12 +78,7 @@ if __name__ == "__main__":
 	# решение дифф
 	trajectory = integral_method(H, v_0, m, v_wind_h_x, v_wind_h_z, f_aer_v)
 
-	'''
-	t = linspace(0, H, int(100 * H))
-	x_t = interp1d(t, trajectory["x"], "nearest", fill_value="extrapolate")
-	z_t = interp1d(t, trajectory["z"], "nearest", fill_value="extrapolate")
-	h_t = interp1d(t, trajectory["y"], "nearest", fill_value="extrapolate")
-	'''
+
 
 	figure_2d_coordinates, axe = subplots(num='Координаты от времени')
 	title("Графики зависимостей координат от времени")
