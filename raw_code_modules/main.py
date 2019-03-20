@@ -12,8 +12,8 @@ from mpl_toolkits.mplot3d import Axes3D
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
 
-v_0, H, m = map(int, input("Введите целочисленные v_0, H, m - через пробелы: ").split())
-x_target, z_target = map(int, input("Введите x, z целочисленные координаты приземления - через пробелы: ").split())
+v_0, H, m = map(float, input("Введите целочисленные v_0, H, m - через пробелы: ").split())
+x_target, z_target = map(float, input("Введите x, z целочисленные координаты приземления - через пробелы: ").split())
 
 reader_wind = reader(open("Wind.csv", "r"))
 reader_F = reader(open("F.csv", "r"))
