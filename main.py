@@ -36,6 +36,8 @@ print(trajectory)
 
 print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
 
+trajectory.to_csv("Trajectory.csv", index = False)
+
 fig = plt.figure()
 ax = p3.Axes3D(fig)
 
