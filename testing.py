@@ -139,9 +139,9 @@ def test2(H, v_0, m, v_wind_h_x, v_wind_h_z, f_aer_v, samples=100, x_target=0, z
     title("Графики зависимостей координат от времени")
     xlabel("Время, в секундах")
     ylabel("Координаты, в метрах")
-    axe.plot(t, trajectory["x"], color = "red")
-    axe.plot(t, trajectory["y"], color = "blue")
-    axe.plot(t, trajectory["z"], color = "green")
+    axe.plot(trajectory["t"], trajectory["x"], color = "red")
+    axe.plot(trajectory["t"], trajectory["y"], color = "blue")
+    axe.plot(trajectory["t"], trajectory["z"], color = "green")
     legend(("x(t)", "y(t)", "z(t)"))
 
     # 3d - график - траектория от времени
