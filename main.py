@@ -1,120 +1,59 @@
+from integrate_method import integral_method
+from digit_method import digit_method
+import pandas as pd
 from scipy.interpolate import interp1d
-from scipy.integrate import odeint
-from scipy.optimize import fsolve
-from matplotlib.pyplot import subplots, plot, show, figure, title, xlabel, ylabel, legend, axes
-from matplotlib.pylab import linspace
-from pynverse import inversefunc
-from csv import reader
-from math import ceil, floor
-from numpy import array
-from mpl_toolkits.mplot3d import Axes3D
-import scipy
+import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as p3
 
+# Ввод данных
+v_0 = float(input("input v0: "))
+H = float(input("input h: "))
+m = float(input("input m: "))
 
-# ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
+x_aim = float(input("x target: "))
+z_aim = float(input("z target: "))
 
-v_0, H, m = map(int, input("Введите целочисленные v_0, H, m - через пробелы: ").split())
-x_target, z_target = map(int, input("Введите x, z целочисленные координаты приземления - через пробелы: ").split())
+wind_csv = pd.read_csv("Wind.csv")
+f_csv = pd.read_csv("F.csv")
 
-reader_wind = reader(open("Wind.csv", "r"))
-reader_F = reader(open("F.csv", "r"))
-
-F_sequence = [] 
-v_sequence = []
-v_wind_sequence_x = []
-v_wind_sequence_z = []
-h_sequence = []
-
-trigger = 1
-for line in reader_F:
-	if trigger:
-		trigger = 0
-	else:
-		v_sequence.append(float(line[0]))
-		F_sequence.append(float(line[1]))
-
-trigger = 1
-for line in reader_wind:
-	if trigger:
-		trigger = 0
-	else:
-		h_sequence.append(float(line[0]))
-		v_wind_sequence_x.append(float(line[1]))
-		v_wind_sequence_z.append(float(line[1]))
-
-
-
-# ФУНКЦИОНАЛЬНЫЙ АНАЛИЗ - ПОДГОТОВКА ДАННЫХ ДЛЯ ДИФФ УРАВНЕНИЙ
+# Подготовка данных
 
 # интерполяция функций
-v_wind_h_x = interp1d(h_sequence, v_wind_sequence_x, "nearest", fill_value = "extrapolate")
-v_wind_h_z = interp1d(h_sequence, v_wind_sequence_z, "nearest", fill_value = "extrapolate")
-F_aer_v = interp1d(v_sequence, F_sequence, "nearest", fill_value = "extrapolate")
+v_wind_h_x = interp1d(wind_csv["Height (m)"], wind_csv["Wx (m/s)"], "nearest", fill_value="extrapolate")
+v_wind_h_z = interp1d(wind_csv["Height (m)"], wind_csv["Wz (m/s)"], "nearest", fill_value="extrapolate")
+f_aer_v = interp1d(f_csv["V(m/s)"], f_csv["F(N)"], "nearest", fill_value="extrapolate")
 
+trajectory = integral_method(H, v_0, m, v_wind_h_x, v_wind_h_z, f_aer_v,
+                             x_target=x_aim, z_target=z_aim)
 
-# РЕШЕНИЕ ДИФФ УРАВНЕНИЙ
+if len(trajectory.index) == 1\
+        or abs(trajectory.loc[len(trajectory.index) - 1]["speed_y"]) <= 10e-6:
+    print("----------------------------------")
+    trajectory = digit_method(H, v_0, m, 0.01, v_wind_h_z, v_wind_h_z, f_aer_v,
+                              x_aim=x_aim, z_aim=z_aim)
 
-# Создаем линейное пространство - numpy массив линейно возрастающих чисел - ось аргумента
-t = linspace(0, 10*H, 100*H)
+print(trajectory)
 
-# Записываем систему дифференциальных уравнений в матричном виде, где func(y, x) = dy / dx
-def func(args, t):
+print("Angle: 0\nX0: {}\nZ0: {}".format(trajectory.loc[0]["x"], trajectory.loc[0]["z"]))
 
-	global m
+fig = plt.figure()
+ax = p3.Axes3D(fig)
 
-	v_x, v_z, v_h, x, z, h = args
+line = ax.plot((trajectory['x'] - trajectory.loc[0]["x"]).values,
+                trajectory['z'].values,
+                trajectory['y'].values
+               )[0]
 
-	f_v_x = - F_aer_v(v_x)  / m  + v_wind_h_x(h) 
-	f_v_z = - F_aer_v(v_z)  / m  + v_wind_h_z(h)
-	f_v_h = F_aer_v(v_h)  / m - 9.81
-	f_x = v_x
-	f_z = v_z
-	f_h = v_h
+step_cell = max(trajectory.loc[0]["y"], trajectory.loc[0]["x"], trajectory.loc[0]["z"])
+ax.set_xlim3d([0, step_cell])
+ax.set_xlabel('X')
 
-	return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
+ax.set_ylim3d([0, step_cell])
+ax.set_ylabel('Z')
 
-# вызываем функция решения системы дифференциальных уравнений из scipy
-args_t_arrays = odeint(func, [v_0, 0, 0, 0, 0, H], t)
+ax.set_zlim3d([0, step_cell])
+ax.set_zlabel('Y')
 
-# получаем выходные функции - интерполируем массивы результатов
-x_t = interp1d(t, args_t_arrays[:, 3], "nearest", fill_value = "extrapolate")
-z_t = interp1d(t, args_t_arrays[:, 4], "nearest", fill_value = "extrapolate")
-h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
+ax.set_title('v0 = {}, h = {}, m = {}'.format(v_0, H, m))
 
-# находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
-t_landing = fsolve(h_t, 0.1)[0]*0.92745
-
-# ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
-
-# для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, floor(t_landing), 10000)
-x_t_vision = array(x_t(t_vision))
-z_t_vision = array(z_t(t_vision))
-h_t_vision = array(h_t(t_vision))
-
-x_t_vision += x_target  # Поднимаем графики, в соотвествии с конечными координатами
-z_t_vision += z_target  # - / / -
-
-# ОТСЮДА - ИСКЛЮЧИТЕЛЬНО РАБОТА С ОКНАМИ
-
-# 2d - графики - координат от времени
-figure_2d_coordinates, axe = subplots(num  = 'Координаты от времени')
-title("Графики зависимостей координат от времени")
-xlabel("Время, в секундах")
-ylabel("Координаты, в метрах")
-axe.plot(t_vision, x_t_vision, color = "red")
-axe.plot(t_vision, h_t_vision, color = "blue")
-axe.plot(t_vision, z_t_vision, color = "green")
-legend(("x(t)", "y(t)", "z(t)"))
-
-# 3d - график - траектория от времени
-figure_3d_trajectory = figure(num = 'Траектория движения')
-title("Траектория полета тела")
-ax = axes(projection='3d')
-plot(xs = x_t_vision, zs = z_t_vision, ys = h_t_vision, zdir = 'y')
-ax.set_xlabel('x coordinate, meters')
-ax.set_ylabel('z coordinate, meters')
-ax.set_zlabel('height, [y coordinate], meters');
-
-
-show()
+plt.show()
