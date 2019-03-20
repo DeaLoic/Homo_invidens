@@ -8,7 +8,6 @@ from csv import reader
 from math import ceil, floor, sqrt
 from numpy import array
 from mpl_toolkits.mplot3d import Axes3D
-import scipy
 
 
 # ЧТЕНИЕ ДАННЫХ И ПОДГОТОВКА МАССИВОВ ДЛЯ РАБОТЫ
@@ -40,7 +39,7 @@ for line in reader_wind:
 	else:
 		h_sequence.append(float(line[0]))
 		v_wind_sequence_x.append(float(line[1]))
-		v_wind_sequence_z.append(float(line[1]))
+		v_wind_sequence_z.append(float(line[2]))
 
 
 
@@ -60,7 +59,6 @@ t = linspace(0, 10*H, 100*H)
 # Записываем систему дифференциальных уравнений в матричном виде, где func(y, x) = dy / dx
 def func(args, t):
 
-        
     global m
 
     v_x, v_z, v_h, x, z, h = args
@@ -76,7 +74,6 @@ def func(args, t):
     f_z = v_z
     f_h = v_h
 
-
     return [f_v_x, f_v_z, f_v_h, f_x, f_z, f_h]
 
 # вызываем функция решения системы дифференциальных уравнений из scipy
@@ -90,16 +87,22 @@ h_t = interp1d(t, args_t_arrays[:, 5], "nearest", fill_value = "extrapolate")
 # находим время призмеления для изъятия конечных координат - обратная функция t(h), при h = 0 - точка приземления
 t_landing = fsolve(h_t, 0.1)[0]
 
+x_landing = x_t(t_landing)
+z_landing = z_t(t_landing)
+
+delta_x = x_target - x_landing
+delta_z = z_target - z_landing
+
 # ВИЗУАЛИЗАЦИЯ И ВСЕ ДЕЛА - ОНА НУЖНА НОРМАЛЬНАЯ 
 
 # для красивой визуализации - ограничиваем ось врмемени временем приземления
-t_vision = linspace(0, floor(t_landing), 1000000)
+t_vision = linspace(0, t_landing, 10000)
 x_t_vision = array(x_t(t_vision))
 z_t_vision = array(z_t(t_vision))
 h_t_vision = array(h_t(t_vision))
 
-x_t_vision += x_target  # Поднимаем графики, в соотвествии с конечными координатами
-z_t_vision += z_target  # - / / -
+x_t_vision += delta_x
+z_t_vision += delta_z
 
 # ОТСЮДА - ИСКЛЮЧИТЕЛЬНО РАБОТА С ОКНАМИ
 
